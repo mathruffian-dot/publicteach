@@ -1,0 +1,36 @@
+<header class="sticky top-0 z-30 w-full bg-slate-900/50 backdrop-blur-md border-b-2 border-slate-700/50">
+  <div class="container mx-auto px-4 md:px-6">
+    <div class="flex items-center justify-between h-20">
+      <!-- Left Side: Title and Subject -->
+      <div class="flex items-center space-x-4">
+        <h1 class="text-xl md:text-2xl font-bold text-amber-400 tracking-wider">
+          Chronos
+        </h1>
+        <div class="relative">
+          <select (change)="onSubjectChange($event)" class="bg-slate-800 border-2 border-slate-600 rounded-md py-2 pl-3 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition">
+            @for(subject of subjects; track subject) {
+              <option [value]="subject">{{ subject }}</option>
+            }
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side: Clock and Controls -->
+      <div class="flex items-center space-x-4 md:space-x-6">
+        <div class="font-mono text-lg md:text-xl text-slate-300 bg-slate-900/70 px-4 py-2 rounded-md border border-slate-700">
+          {{ currentTime() }}
+        </div>
+        <button (click)="toggle()" class="w-16 h-16 flex items-center justify-center rounded-full transition-transform duration-300 ease-in-out hover:scale-110 focus:outline-none focus:ring-4 focus:ring-amber-500/50">
+          @if (sessionActive()) {
+            <app-stop-icon />
+          } @else {
+            <app-start-icon />
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</header>

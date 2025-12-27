@@ -1,0 +1,97 @@
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 h-full">
+  <!-- Left Column: Teaching States -->
+  <div class="lg:col-span-1 space-y-4">
+    <h2 class="text-lg font-semibold text-slate-400 tracking-wider">教學模式 (States)</h2>
+    <div class="grid grid-cols-2 gap-4">
+      @for(state of teachingStates(); track state.name) {
+        <div 
+          (click)="onStateClick(state.name)"
+          [class.cursor-pointer]="sessionActive()"
+          [class.cursor-not-allowed]="!sessionActive()"
+          [class.bg-amber-600/20]="state.active"
+          [class.border-amber-500]="state.active"
+          [class.border-slate-700]="!state.active"
+          class="p-4 rounded-lg border-2 transition-all duration-300 flex flex-col items-center justify-center aspect-square text-center"
+          [class.hover:border-amber-500]="sessionActive()"
+          [class.hover:bg-slate-800/50]="sessionActive()"
+        >
+          <div class="w-8 h-8 md:w-10 md:h-10 mb-2" [class.text-amber-400]="state.active" [class.text-slate-400]="!state.active">
+            @switch (state.icon) {
+              @case ('presentation') { <app-presentation-icon /> }
+              @case ('group') { <app-group-icon /> }
+              @case ('lab') { <app-lab-icon /> }
+              @case ('device') { <app-device-icon /> }
+            }
+          </div>
+          <span class="font-medium text-sm md:text-base">{{ state.name }}</span>
+          <span class="font-mono text-lg md:text-xl mt-1" [class.text-amber-400]="state.active">
+            {{ formatTime(state.time) }}
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Center Column: Teaching Actions -->
+  <div class="lg:col-span-1 space-y-4">
+    <h2 class="text-lg font-semibold text-slate-400 tracking-wider">教學行為 (Actions)</h2>
+    <div class="grid grid-cols-2 gap-4">
+      @for(action of teachingActions(); track action.name) {
+        <div 
+          (click)="onActionClick(action.name)"
+          [class.cursor-pointer]="sessionActive()"
+          [class.cursor-not-allowed]="!sessionActive()"
+          [class.bg-amber-600/20]="action.active"
+          [class.border-amber-500]="action.active"
+          [class.border-slate-700]="!action.active"
+          class="p-4 rounded-lg border-2 transition-all duration-300 flex flex-col items-center justify-center aspect-square text-center"
+          [class.hover:border-amber-500]="sessionActive()"
+          [class.hover:bg-slate-800/50]="sessionActive()"
+        >
+          <div class="w-8 h-8 md:w-10 md:h-10 mb-2" [class.text-amber-400]="action.active" [class.text-slate-400]="!action.active">
+             @switch (action.icon) {
+              @case ('thumbUp') { <app-thumb-up-icon /> }
+              @case ('thumbDown') { <app-thumb-down-icon /> }
+              @case ('questionOpen') { <app-question-open-icon /> }
+              @case ('questionClosed') { <app-question-closed-icon /> }
+              @case ('walk') { <app-walk-icon /> }
+            }
+          </div>
+          <span class="font-medium text-sm md:text-base">{{ action.name }}</span>
+          @if (action.active) {
+            <span class="font-mono text-lg md:text-xl mt-1 text-amber-400">
+              {{ formatTime(action.time) }}
+            </span>
+          } @else {
+            <span class="font-mono text-lg md:text-xl mt-1 text-amber-400">
+              {{ action.count }} 次
+            </span>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Right Column: Log Stream -->
+  <div class="lg:col-span-1 space-y-4 flex flex-col">
+    <h2 class="text-lg font-semibold text-slate-400 tracking-wider">即時紀錄 (Log Stream)</h2>
+    <div class="flex-grow bg-slate-900 rounded-lg p-4 border border-slate-700 h-64 lg:h-full overflow-y-auto">
+      <ul class="space-y-2 text-sm">
+        @for(log of logStream(); track $index) {
+          <li class="flex items-baseline">
+            <span class="font-mono text-slate-500 mr-3">{{ formatLogTime(log.timestamp) }}</span>
+            <span class="text-slate-300">{{ log.event }}</span>
+          </li>
+        } @empty {
+          <li class="text-slate-500 text-center pt-8">
+            @if (sessionActive()) {
+              <span>等待紀錄中...</span>
+            } @else {
+              <span>點擊開始按鈕以啟動觀課</span>
+            }
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+</div>

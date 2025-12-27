@@ -1,0 +1,52 @@
+<footer class="sticky bottom-0 z-30 w-full bg-slate-900/50 backdrop-blur-md border-t-2 border-slate-700/50">
+  <div class="container mx-auto px-4 md:px-6">
+    <div class="flex flex-col md:flex-row items-center justify-between h-28 md:h-20 gap-4 md:gap-0 py-4 md:py-0">
+      <!-- Left Side: Engagement Slider -->
+      <div class="flex items-center space-x-4">
+        <span 
+          class="font-semibold text-slate-400"
+          [class.animate-pulse-amber]="remindForEngagement()"
+          [class.rounded-full]="remindForEngagement()">
+          學生專注度
+        </span>
+        <div class="flex items-center space-x-2 rounded-full p-1 bg-slate-800 border border-slate-700">
+          @for (option of engagementOptions; track option.value) {
+            <button
+              (click)="setEngagement(option.value)"
+              [disabled]="!sessionActive()"
+              [class.cursor-pointer]="sessionActive()"
+              [class.cursor-not-allowed]="!sessionActive()"
+              [class.ring-2]="engagementLevel() === option.value"
+              [class.ring-offset-2]="engagementLevel() === option.value"
+              [class.ring-offset-slate-800]="engagementLevel() === option.value"
+              [class.ring-white]="engagementLevel() === option.value"
+              [class]="option.color"
+              class="w-16 h-8 rounded-full text-sm font-bold text-white transition-all focus:outline-none"
+            >
+              {{ option.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Right Side: Qualitative Note Input -->
+      <div class="flex items-center w-full md:w-auto md:max-w-md">
+        <input 
+          type="text"
+          placeholder="質性紀錄..."
+          [disabled]="!sessionActive()"
+          [(ngModel)]="noteText"
+          (keyup.enter)="sendNote()"
+          class="w-full bg-slate-800 border-2 border-slate-600 rounded-l-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition disabled:opacity-50"
+        />
+        <button
+          (click)="sendNote()"
+          [disabled]="!sessionActive()"
+          class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 px-4 rounded-r-md transition flex items-center justify-center h-full border-2 border-amber-500 hover:border-amber-600 disabled:bg-slate-600 disabled:border-slate-600 disabled:cursor-not-allowed"
+        >
+          <app-send-icon />
+        </button>
+      </div>
+    </div>
+  </div>
+</footer>

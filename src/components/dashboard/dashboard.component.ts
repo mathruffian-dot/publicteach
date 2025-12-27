@@ -12,11 +12,17 @@ import { QuestionOpenIconComponent } from '../icons/question-open-icon.component
 import { QuestionClosedIconComponent } from '../icons/question-closed-icon.component';
 import { WalkIconComponent } from '../icons/walk-icon.component';
 
+export interface Session {
+  start: Date;
+  end: Date | null;
+}
+
 export interface TeachingState {
   name: string;
   active: boolean;
   time: number;
   icon: string;
+  sessions: Session[];
 }
 
 export interface TeachingAction {
@@ -25,6 +31,7 @@ export interface TeachingAction {
   icon: string;
   active: boolean;
   time: number;
+  sessions: Session[];
 }
 
 export interface LogEntry {

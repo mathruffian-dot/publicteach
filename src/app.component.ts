@@ -32,17 +32,17 @@ export class AppComponent implements OnDestroy {
   selectedSubject = signal('國文');
   logStream = signal<LogEntry[]>([]);
   teachingStates = signal<TeachingState[]>([
-    { name: '講述教學', active: false, time: 0, icon: 'presentation' },
-    { name: '小組討論', active: false, time: 0, icon: 'group' },
-    { name: '實作/演算', active: false, time: 0, icon: 'lab' },
-    { name: '數位運用', active: false, time: 0, icon: 'device' },
+    { name: '講述教學', active: false, time: 0, icon: 'presentation', sessions: [] },
+    { name: '小組討論', active: false, time: 0, icon: 'group', sessions: [] },
+    { name: '實作/演算', active: false, time: 0, icon: 'lab', sessions: [] },
+    { name: '數位運用', active: false, time: 0, icon: 'device', sessions: [] },
   ]);
   teachingActions = signal<TeachingAction[]>([
-    { name: '正向鼓勵', count: 0, icon: 'thumbUp', active: false, time: 0 },
-    { name: '糾正規範', count: 0, icon: 'thumbDown', active: false, time: 0 },
-    { name: '開放提問', count: 0, icon: 'questionOpen', active: false, time: 0 },
-    { name: '封閉提問', count: 0, icon: 'questionClosed', active: false, time: 0 },
-    { name: '巡視走動', count: 0, icon: 'walk', active: false, time: 0 },
+    { name: '正向鼓勵', count: 0, icon: 'thumbUp', active: false, time: 0, sessions: [] },
+    { name: '糾正規範', count: 0, icon: 'thumbDown', active: false, time: 0, sessions: [] },
+    { name: '開放提問', count: 0, icon: 'questionOpen', active: false, time: 0, sessions: [] },
+    { name: '封閉提問', count: 0, icon: 'questionClosed', active: false, time: 0, sessions: [] },
+    { name: '巡視走動', count: 0, icon: 'walk', active: false, time: 0, sessions: [] },
   ]);
   qualitativeNotes = signal<string[]>([]);
   engagementLog = signal<{ time: string, level: string }[]>([]);
@@ -118,11 +118,41 @@ export class AppComponent implements OnDestroy {
   }
 
   toggleSession(active: boolean) {
-    this.sessionActive.set(active);
     if (active) {
+      // Start session
+      this.sessionActive.set(true);
       this.addLog('觀課開始');
       this.lastInteractionTime.set(Date.now());
     } else {
+      // Stop session
+      const now = new Date();
+      // Finalize all active states
+      this.teachingStates.update(states => states.map(s => {
+        if (s.active) {
+          // FIX: Replaced .at(-1) with array[array.length - 1] for wider compatibility.
+          const lastSession = s.sessions[s.sessions.length - 1];
+          if (lastSession && lastSession.end === null) {
+            lastSession.end = now;
+          }
+          return { ...s, active: false };
+        }
+        return s;
+      }));
+      // Finalize all active actions
+      this.teachingActions.update(actions => actions.map(a => {
+        if (a.active) {
+          // FIX: Replaced .at(-1) with array[array.length - 1] for wider compatibility.
+          const lastSession = a.sessions[a.sessions.length - 1];
+          if (lastSession && lastSession.end === null) {
+            lastSession.end = now;
+          }
+          return { ...a, active: false };
+        }
+        return a;
+      }));
+      
+      this.sessionActive.set(false); // This will trigger the effect to stop timers
+      
       this.addLog('觀課結束');
       this.showSummaryModal.set(true);
     }
@@ -135,9 +165,27 @@ export class AppComponent implements OnDestroy {
 
   handleStateToggle(stateName: string) {
     this.teachingStates.update(states =>
-      states.map(s =>
-        s.name === stateName ? { ...s, active: !s.active } : s
-      )
+      states.map(s => {
+        if (s.name === stateName) {
+          const now = new Date();
+          const newActiveState = !s.active;
+          let newSessions = [...s.sessions];
+
+          if (newActiveState) {
+            // Start new session
+            newSessions.push({ start: now, end: null });
+          } else {
+            // End last session
+            // FIX: Replaced .at(-1) with array[array.length - 1] for wider compatibility.
+            const lastSession = newSessions[newSessions.length - 1];
+            if (lastSession && lastSession.end === null) {
+              lastSession.end = now;
+            }
+          }
+          return { ...s, active: newActiveState, sessions: newSessions };
+        }
+        return s;
+      })
     );
     const toggledState = this.teachingStates().find(s => s.name === stateName);
     this.addLog(`教學模式: ${stateName} - ${toggledState?.active ? '啟用' : '停用'}`);
@@ -149,12 +197,28 @@ export class AppComponent implements OnDestroy {
     this.teachingActions.update(actions =>
       actions.map(a => {
         if (a.name === actionName) {
+          const now = new Date();
           const newActiveState = !a.active;
           becameActive = newActiveState;
+          let newSessions = [...a.sessions];
+
+          if (newActiveState) {
+            // Start new session
+            newSessions.push({ start: now, end: null });
+          } else {
+            // End last session
+            // FIX: Replaced .at(-1) with array[array.length - 1] for wider compatibility.
+            const lastSession = newSessions[newSessions.length - 1];
+            if (lastSession && lastSession.end === null) {
+              lastSession.end = now;
+            }
+          }
+          
           return {
             ...a,
             active: newActiveState,
-            count: newActiveState ? a.count + 1 : a.count, // Increment count on activation
+            sessions: newSessions,
+            count: newSessions.length, // count is now derived from sessions length
           };
         }
         return a;

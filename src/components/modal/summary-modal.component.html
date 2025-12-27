@@ -13,7 +13,9 @@
         <h3 class="text-lg font-semibold text-amber-500 mb-2">教學模式</h3>
         <ul class="list-disc list-inside space-y-1 text-slate-300">
           @for (state of states(); track state.name) {
-            <li>{{ state.name }}: <span class="font-mono">{{ formatTime(state.time) }}</span></li>
+            @if (state.time > 0) {
+              <li>{{ state.name }}: <span class="font-mono">{{ formatTime(state.time) }}</span></li>
+            }
           }
         </ul>
       </div>
@@ -23,7 +25,9 @@
         <h3 class="text-lg font-semibold text-amber-500 mb-2">教學行為</h3>
         <ul class="list-disc list-inside space-y-1 text-slate-300">
           @for (action of actions(); track action.name) {
-            <li>{{ action.name }}: <span class="font-mono">{{ action.count }} 次</span></li>
+            @if (action.count > 0) {
+             <li>{{ action.name }}: <span class="font-mono">{{ action.count }} 次, 總計 {{ formatTime(action.time) }}</span></li>
+            }
           }
         </ul>
       </div>
@@ -44,7 +48,7 @@
       <!-- Qualitative Notes -->
       <div>
         <h3 class="text-lg font-semibold text-amber-500 mb-2">質性紀錄</h3>
-        <ul class="list-disc list-inside space-y-1 text-slate-300">
+        <ul class.bind="list-disc list-inside space-y-1 text-slate-300">
           @for (note of qualitativeNotes(); track $index) {
             <li>{{ note }}</li>
           }
@@ -56,7 +60,7 @@
     </div>
 
     <!-- Modal Footer -->
-    <div class="p-6 border-t-2 border-slate-700/50 flex justify-end items-center space-x-4">
+    <div class="p-6 border-t-2 border-slate-700/50 flex justify-end items-center space-y-4">
       <button (click)="copyReport()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-md transition">複製紀錄</button>
       <button (click)="downloadReport()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-md font-semibold transition">下載 TXT</button>
       <button (click)="closeModal.emit()" class="px-4 py-2 bg-red-800 hover:bg-red-700 rounded-md transition">關閉</button>

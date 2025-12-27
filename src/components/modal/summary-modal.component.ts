@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TeachingState, TeachingAction } from '../dashboard/dashboard.component';
+import { TeachingState, TeachingAction, Session } from '../dashboard/dashboard.component';
 
 @Component({
   selector: 'app-summary-modal',
@@ -23,7 +23,7 @@ export class SummaryModalComponent {
   closeModal = output<void>();
 
   private generateReportText(): string {
-    const s = this.startTime() ? new Date(this.startTime()!).toLocaleString('zh-TW') : 'N/A';
+    const s = this.startTime() ? new Date(this.startTime()!).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }) : 'N/A';
     
     let report = `## Chronos 觀課報告 ##\n\n`;
     report += `科目: ${this.subject()}\n`;
@@ -31,9 +31,25 @@ export class SummaryModalComponent {
     report += `總時長: ${this.totalTime()}\n`;
     report += `=========================\n\n`;
 
+    const formatTimestamp = (date: Date | null): string => {
+        if (!date) return '進行中';
+        return date.toLocaleTimeString('zh-TW', { hour12: false, timeZone: 'Asia/Taipei' });
+    };
+
+    const getSessionDuration = (session: Session): number => {
+        const endTime = session.end || new Date(); // Should not happen in final report, but as a fallback
+        return Math.round((endTime.getTime() - session.start.getTime()) / 1000);
+    };
+
     report += `### 教學模式 (States) ###\n`;
     this.states().forEach(state => {
-      report += `- ${state.name}: ${this.formatTime(state.time)}\n`;
+      if (state.sessions.length > 0) {
+        report += `- ${state.name}: 總計 ${this.formatTime(state.time)}\n`;
+        state.sessions.forEach(session => {
+            const duration = this.formatTime(getSessionDuration(session));
+            report += `  - ${formatTimestamp(session.start)} ~ ${formatTimestamp(session.end)} (${duration})\n`;
+        });
+      }
     });
     report += `\n`;
 
@@ -41,6 +57,10 @@ export class SummaryModalComponent {
     this.actions().forEach(action => {
       if (action.count > 0) {
         report += `- ${action.name}: ${action.count} 次, 總計 ${this.formatTime(action.time)}\n`;
+        action.sessions.forEach(session => {
+            const duration = this.formatTime(getSessionDuration(session));
+            report += `  - ${formatTimestamp(session.start)} ~ ${formatTimestamp(session.end)} (${duration})\n`;
+        });
       }
     });
     report += `\n`;
@@ -56,7 +76,7 @@ export class SummaryModalComponent {
       report += `- ${note}\n`;
     });
     report += `\n=========================\n`;
-    report += `報告生成時間: ${new Date().toLocaleString('zh-TW')}`;
+    report += `報告生成時間: ${new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })}`;
     
     return report;
   }
